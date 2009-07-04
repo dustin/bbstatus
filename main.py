@@ -39,7 +39,8 @@ class HookHandler(webapp.RequestHandler):
         p = self.request.POST
 
         bs = models.BuildStatus(builder=builder, reason=p['reason'],
-                                sourceStamp=p['sourceStamp'],
+                                revision=p['revision'],
+                                patch=p.get("patch", None),
                                 buildNumber=int(p['buildNumber']))
         db.put(bs)
 
