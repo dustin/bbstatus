@@ -64,8 +64,11 @@ class HookHandler(webapp.RequestHandler):
         db.delete(k)
 
     def handle_buildStarted(self):
-        builder = self._get_builder()
         p = self.request.POST
+
+        builder = self._get_builder()
+        builder.current_build = int(p['buildNumber'])
+        builder.put()
 
         bs = models.BuildStatus(builder=builder, reason=p['reason'],
                                 revision=p['revision'],
@@ -85,6 +88,8 @@ class HookHandler(webapp.RequestHandler):
         if build:
             build.finished = datetime.datetime.now()
             build.result = p['result']
+            build.current_build = 0
+            build.current_step = None
             build.put()
 
             builder.latest_build = int(p['buildNumber'])
@@ -92,6 +97,11 @@ class HookHandler(webapp.RequestHandler):
             builder.put()
         else:
             self.response.set_status(404)
+
+    def handle_stepStarted(self):
+        b = self._get_builder()
+        b.current_step = self.request.get("step")
+        b.put()
 
     def handle_stepFinished(self):
         p = self.request.POST

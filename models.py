@@ -17,6 +17,8 @@ class Builder(db.Model):
     name = db.StringProperty(required=True)
     latest_build = db.IntegerProperty()
     latest_build_result = db.StringProperty()
+    current_build = db.IntegerProperty()
+    current_step = db.StringProperty()
 
     def id(self):
         return self.name

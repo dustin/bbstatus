@@ -7,8 +7,22 @@
 
 <ul>
   {% for b in builders %}
-    <li>{{ b.name }} - <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.latest_build }}">latest</a>:
-      <span class="{{ b.latest_build_result }}">{{ b.latest_build_result }}</span></li>
+  <li>
+    {{ b.name }} -
+      {% if b.latest_build %}
+        <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.latest_build }}">latest</a>:
+        <span class="{{ b.latest_build_result }}">{{ b.latest_build_result }}</span>
+      {% else %}
+        No current builds.
+      {% endif %}
+
+      {% if b.current_build %}
+        - <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.current_build }}">now building</a>:
+        currently working on <code>{{ b.current_step }}</code>.
+      {% else %}
+        (idle)
+      {% endif %}
+    </li>
   {% endfor %}
 </ul>
 
