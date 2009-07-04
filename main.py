@@ -88,12 +88,12 @@ class HookHandler(webapp.RequestHandler):
         if build:
             build.finished = datetime.datetime.now()
             build.result = p['result']
-            build.current_build = 0
-            build.current_step = None
             build.put()
 
             builder.latest_build = int(p['buildNumber'])
             builder.latest_build_result = p['result']
+            builder.current_build = None
+            builder.current_step = None
             builder.put()
         else:
             self.response.set_status(404)
