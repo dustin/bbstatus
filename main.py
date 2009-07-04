@@ -59,6 +59,7 @@ class HookHandler(webapp.RequestHandler):
 
             builder.latest_build = int(p['buildNumber'])
             builder.latest_build_result = p['result']
+            builder.put()
         else:
             self.response.set_status(404)
 
