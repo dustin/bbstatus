@@ -39,3 +39,7 @@ class StepStatus(db.Model):
     buildNumber = db.IntegerProperty(required=True)
     status = db.StringProperty(required=True)
     logs = db.StringListProperty()
+    created = db.DateTimeProperty(auto_now_add=True)
+
+    def log_grok(self):
+        return ((x[x.rfind('/')+1:], x) for x in self.logs)

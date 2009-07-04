@@ -36,8 +36,14 @@ class BuildHandler(webapp.RequestHandler):
             self.response.out.write("Build not found.")
             return
 
+        query = models.StepStatus.all()
+        query.filter('builder = ', builder)
+        query.filter('buildNumber =', int(buildnum))
+        query.order('created')
+
         self.response.out.write(template.render(
-                'templates/build.html', {'build': status}))
+                'templates/build.html', {'build': status,
+                                         'steps': query.fetch(1000)}))
 
 class HookHandler(webapp.RequestHandler):
 
@@ -86,6 +92,15 @@ class HookHandler(webapp.RequestHandler):
             builder.put()
         else:
             self.response.set_status(404)
+
+    def handle_stepFinished(self):
+        p = self.request.POST
+        ss = models.StepStatus(builder=self._get_builder(),
+                               name=p['step'],
+                               buildNumber=int(p['buildNumber']),
+                               status=p['resultStatus'],
+                               logs=self.request.get_all('logFile'))
+        ss.put()
 
     def _get_builder(self):
         cat_name = self.request.POST['category']
