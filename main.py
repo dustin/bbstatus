@@ -5,6 +5,15 @@ from google.appengine.ext.webapp import template
 
 import models
 
+class CategoryHandler(webapp.RequestHandler):
+
+    def get(self):
+        cat = db.get(db.Key.from_path('Category', self.request.path[1:]))
+        builders = models.Builder.all().filter('category = ', cat).fetch(1000)
+        self.response.out.write(template.render(
+                'templates/cat.html', {'cat': cat, 'builders': builders}))
+
+
 class HookHandler(webapp.RequestHandler):
 
     def post(self):
@@ -33,12 +42,15 @@ class HookHandler(webapp.RequestHandler):
 class MainHandler(webapp.RequestHandler):
 
     def get(self):
-        self.response.out.write(template.render('templates/index.html', {}))
+        cats = sorted(c.name() for c in models.Category.all(keys_only=True).fetch(100))
+        self.response.out.write(template.render(
+                'templates/index.html', {'cats': cats}))
 
 def main():
     application = webapp.WSGIApplication([
             ('/', MainHandler),
-            ('/webhook', HookHandler)], debug=True)
+            ('/webhook', HookHandler),
+            ('/.*', CategoryHandler)], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 
 

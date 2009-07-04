@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <p>
-  How are the builds?
+  Examining category {{ cat.name }}.
 </p>
 
 <ul>
-  {% for c in cats %}
-  <li><a href="{{ c }}">{{ c }}</a></li>
+  {% for b in builders %}
+    <li>{{ b.name }}</li>
   {% endfor %}
 </ul>
+
 {% endblock %}
