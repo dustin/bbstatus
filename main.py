@@ -9,8 +9,12 @@ import models
 
 class CategoryHandler(webapp.RequestHandler):
 
-    def get(self):
-        cat = db.get(db.Key.from_path('Category', self.request.path[1:]))
+    def get(self, cat_name):
+        cat = db.get(db.Key.from_path('Category', cat_name))
+        if not cat:
+            self.response.set_status(404)
+            self.response.out.write("No such category: %s" % cat_name)
+
         builders = models.Builder.all().filter('category = ', cat).fetch(1000)
         self.response.out.write(template.render(
                 'templates/cat.html', {'cat': cat, 'builders': builders}))
@@ -105,7 +109,7 @@ def main():
             ('/', MainHandler),
             ('/webhook', HookHandler),
             ('/(.*)/(.*)/build/(.*)', BuildHandler),
-            ('/.*', CategoryHandler)], debug=True)
+            ('/(.*)', CategoryHandler)], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 
 
