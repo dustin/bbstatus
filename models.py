@@ -15,6 +15,8 @@ class Builder(db.Model):
 
     category = db.ReferenceProperty(Category)
     name = db.StringProperty(required=True)
+    latest_build = db.IntegerProperty()
+    latest_build_result = db.StringProperty()
 
     def id(self):
         return self.name
@@ -22,7 +24,8 @@ class Builder(db.Model):
 class BuildStatus(db.Model):
 
     builder = db.ReferenceProperty(Builder)
-    result = db.StringProperty(required=True)
+    result = db.StringProperty()
+    reason = db.StringProperty()
     sourceStamp = db.StringProperty(required=True)
     buildNumber = db.IntegerProperty(required=True)
     started = db.DateTimeProperty(auto_now=True)

@@ -7,7 +7,7 @@
 
 <ul>
   {% for b in builders %}
-    <li>{{ b.name }}</li>
+    <li>{{ b.name }} - latest: {{ b.latest_build_result }}</li>
   {% endfor %}
 </ul>
 
