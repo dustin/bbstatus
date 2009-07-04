@@ -1,4 +1,5 @@
 import datetime
+import urllib
 
 import wsgiref.handlers
 
@@ -10,7 +11,7 @@ import models
 class CategoryHandler(webapp.RequestHandler):
 
     def get(self, cat_name):
-        cat = db.get(db.Key.from_path('Category', cat_name))
+        cat = db.get(db.Key.from_path('Category', urllib.unquote_plus(cat_name)))
         if not cat:
             self.response.set_status(404)
             self.response.out.write("No such category: %s" % cat_name)
@@ -22,7 +23,7 @@ class CategoryHandler(webapp.RequestHandler):
 class BuildHandler(webapp.RequestHandler):
 
     def get(self, category_name, builder_name, buildnum):
-        k = db.Key.from_path('Builder', builder_name)
+        k = db.Key.from_path('Builder', urllib.unquote_plus(builder_name))
         builder = models.Builder.get(k)
 
         query = models.BuildStatus.all()

@@ -1,4 +1,4 @@
-import time, yaml
+import time, yaml, urllib
 from google.appengine.ext import db
 from google.appengine.api import datastore_types
 
@@ -44,4 +44,4 @@ class StepStatus(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
 
     def log_grok(self):
-        return ((x[x.rfind('/')+1:], x) for x in self.logs)
+        return ((urllib.unquote_plus(x[x.rfind('/')+1:]), x) for x in self.logs)

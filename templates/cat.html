@@ -10,14 +10,14 @@
   <li>
     {{ b.name }} -
       {% if b.latest_build %}
-        <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.latest_build }}">latest</a>:
+        <a href="/{{ cat.name|urlencode }}/{{ b.name|urlencode }}/build/{{ b.latest_build }}">latest</a>:
         <span class="{{ b.latest_build_result }}">{{ b.latest_build_result }}</span>
       {% else %}
         No current builds.
       {% endif %}
 
       {% if b.current_build %}
-        - <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.current_build }}">now building</a>:
+        - <a href="/{{ cat.name|urlencode }}/{{ b.name|urlencode }}/build/{{ b.current_build }}">now building</a>:
         currently working on <code>{{ b.current_step }}</code>.
       {% else %}
         (idle)
