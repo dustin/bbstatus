@@ -7,7 +7,8 @@
 
 <ul>
   {% for b in builders %}
-    <li class="{{ b.latest_build_result }}">{{ b.name }} - latest: {{ b.latest_build_result }}</li>
+    <li>{{ b.name }} - <a href="/{{ cat.name }}/{{ b.name }}/build/{{ b.latest_build }}">latest</a>:
+      <span class="{{ b.latest_build_result }}">{{ b.latest_build_result }}</span></li>
   {% endfor %}
 </ul>
 

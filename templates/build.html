@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>
+  Examining build {{ build.builder.name  }} #{{ build.buildNumber }}
+</h1>
+
+<p>
+  Build was against revision {{ build.revision }}.
+  It began at {{ build.started }} and completed at
+  {{ build.finished }} with a status of
+  <span class="{{ build.result }}">{{ build.result }}</span>.
+</p>
+
+<h2>Build Steps</h2>
+
+<ol class="steps">
+{% for step in steps %}
+  <li>{{ step.name }}:  <span class="{{ step.status }}">{{ step.status }}</span>
+    {% if step.logs %}
+      <ul>
+      {% for log in step.log_grok %}
+        <li><a href="{{ log.1 }}">{{ log.0 }} log</a></li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+{% endfor %}
+</ol>
+
+{% if build.patch %}
+  <h2>Patch Info</h2>
+  <p>The following patch was applied to revision {{ build.revision }}:</p>
+  <pre>{{ build.patch }}</pre>
+{% endif %}
+
+{% endblock %}

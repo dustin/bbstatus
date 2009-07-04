@@ -15,6 +15,25 @@ class CategoryHandler(webapp.RequestHandler):
         self.response.out.write(template.render(
                 'templates/cat.html', {'cat': cat, 'builders': builders}))
 
+class BuildHandler(webapp.RequestHandler):
+
+    def get(self, category_name, builder_name, buildnum):
+        k = db.Key.from_path('Builder', builder_name)
+        builder = models.Builder.get(k)
+
+        query = models.BuildStatus.all()
+        query.filter('builder = ', builder)
+        query.filter('buildNumber =', int(buildnum))
+
+        status = query.get()
+
+        if not status:
+            self.response.set_status(404)
+            self.response.out.write("Build not found.")
+            return
+
+        self.response.out.write(template.render(
+                'templates/build.html', {'build': status}))
 
 class HookHandler(webapp.RequestHandler):
 
@@ -85,6 +104,7 @@ def main():
     application = webapp.WSGIApplication([
             ('/', MainHandler),
             ('/webhook', HookHandler),
+            ('/(.*)/(.*)/build/(.*)', BuildHandler),
             ('/.*', CategoryHandler)], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 
