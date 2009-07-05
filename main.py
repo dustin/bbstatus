@@ -16,9 +16,8 @@ class CategoryHandler(webapp.RequestHandler):
             self.response.set_status(404)
             self.response.out.write("No such category: %s" % cat_name)
 
-        builders = models.Builder.all().filter('category = ', cat).fetch(1000)
         self.response.out.write(template.render(
-                'templates/cat.html', {'cat': cat, 'builders': builders}))
+                'templates/cat.html', {'cat': cat}))
 
 class BuildHandler(webapp.RequestHandler):
 
@@ -26,25 +25,15 @@ class BuildHandler(webapp.RequestHandler):
         k = db.Key.from_path('Builder', urllib.unquote_plus(builder_name))
         builder = models.Builder.get(k)
 
-        query = models.BuildStatus.all()
-        query.filter('builder = ', builder)
-        query.filter('buildNumber =', int(buildnum))
-
-        status = query.get()
+        status = builder.get_build(int(buildnum))
 
         if not status:
             self.response.set_status(404)
             self.response.out.write("Build not found.")
             return
 
-        query = models.StepStatus.all()
-        query.filter('builder = ', builder)
-        query.filter('buildNumber =', int(buildnum))
-        query.order('created')
-
         self.response.out.write(template.render(
-                'templates/build.html', {'build': status,
-                                         'steps': query.fetch(1000)}))
+                'templates/build.html', {'build': status}))
 
 class HookHandler(webapp.RequestHandler):
 
@@ -81,11 +70,8 @@ class HookHandler(webapp.RequestHandler):
         builder = self._get_builder()
         p = self.request.POST
 
-        query = models.BuildStatus.all()
-        query.filter('builder = ', builder)
-        query.filter('buildNumber =', int(p['buildNumber']))
+        build = builder.get_build(int(p['buildNumber']))
 
-        build = query.get()
         if build:
             build.finished = datetime.datetime.now()
             build.result = p['result']
@@ -126,7 +112,7 @@ class HookHandler(webapp.RequestHandler):
 class MainHandler(webapp.RequestHandler):
 
     def get(self):
-        cats = sorted(models.Category.all().fetch(100))
+        cats = models.Category.all().order('name').fetch(100)
         self.response.out.write(template.render(
                 'templates/index.html', {'cats': cats}))
 

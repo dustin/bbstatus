@@ -13,7 +13,7 @@ class Category(db.Model):
         return self.name
 
     def builders(self):
-        return Builder.all().filter('category = ', self).fetch(1000)
+        return Builder.all().filter('category = ', self).order('name').fetch(1000)
 
     def is_building(self):
         logging.info("Checking to see if %s has active builders", self.name)
@@ -75,6 +75,14 @@ class BuildStatus(db.Model):
     buildNumber = db.IntegerProperty(required=True)
     started = db.DateTimeProperty(auto_now=True)
     finished = db.DateTimeProperty()
+
+    def get_steps(self):
+        query = StepStatus.all()
+        query.filter('builder = ', self.builder)
+        query.filter('buildNumber =', self.buildNumber)
+        query.order('created')
+
+        return query.fetch(1000)
 
 class StepStatus(db.Model):
 
