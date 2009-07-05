@@ -6,7 +6,12 @@
 
 <ul>
   {% for c in cats %}
-  <li><a href="{{ c }}">{{ c }}</a></li>
+  <li>
+    <a href="{{ c.name }}">{{ c.name }}</a>
+    {% if c.is_building %}
+      - <span class="building">Currently Building!</span>
+    {% endif %}
+  </li>
   {% endfor %}
 </ul>
 {% endblock %}

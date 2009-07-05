@@ -12,6 +12,16 @@ class Category(db.Model):
     def id(self):
         return self.name
 
+    def builders(self):
+        return Builder.all().filter('category = ', self).fetch(1000)
+
+    def is_building(self):
+        logging.info("Checking to see if %s has active builders", self.name)
+        return any(b.is_building() for b in self.builders())
+
+    def __cmp__(self, o):
+        return cmp(self.name, o.name)
+
 class Builder(db.Model):
 
     max_build_age = datetime.timedelta(0, 3600, 0)

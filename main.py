@@ -126,7 +126,7 @@ class HookHandler(webapp.RequestHandler):
 class MainHandler(webapp.RequestHandler):
 
     def get(self):
-        cats = sorted(c.name() for c in models.Category.all(keys_only=True).fetch(100))
+        cats = sorted(models.Category.all().fetch(100))
         self.response.out.write(template.render(
                 'templates/index.html', {'cats': cats}))
 

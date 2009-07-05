@@ -13,3 +13,7 @@ body {
 .failure {
     color: red;
 }
+
+.building {
+    color: green
+}
