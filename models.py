@@ -1,4 +1,5 @@
-import time, yaml, urllib
+import time, yaml, urllib, datetime, logging
+
 from google.appengine.ext import db
 from google.appengine.api import datastore_types
 
@@ -13,6 +14,8 @@ class Category(db.Model):
 
 class Builder(db.Model):
 
+    max_build_age = datetime.timedelta(0, 3600, 0)
+
     category = db.ReferenceProperty(Category)
     name = db.StringProperty(required=True)
     latest_build = db.IntegerProperty()
@@ -22,6 +25,35 @@ class Builder(db.Model):
 
     def id(self):
         return self.name
+
+    def is_building(self):
+        if not self.current_build:
+            logging.info("No current build from %s, returning False",
+                         self.name)
+            return False
+
+        build = self.get_build(self.current_build)
+        if not build:
+            logging.info("Couldn't find current build from %s.", self.name)
+            return False
+
+        age = datetime.datetime.now() - build.started
+        logging.info("Found a build from %s started at %s (%s ago)",
+                     self.name, build.started, age)
+        if age > self.max_build_age:
+            logging.info("Current build is too old:  %s - %s = %s" %
+                         (str(datetime.datetime()), str(build.started),
+                          str(datetime.datetime() - build.started)))
+            return False
+
+        logging.info("Currently building on %s.", self.name)
+        return True
+
+    def get_build(self, n):
+        query = BuildStatus.all()
+        query.filter('builder = ', self)
+        query.filter('buildNumber =', n)
+        return query.get()
 
 class BuildStatus(db.Model):
 

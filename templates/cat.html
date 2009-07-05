@@ -16,7 +16,7 @@
         No current builds.
       {% endif %}
 
-      {% if b.current_build %}
+      {% if b.is_building %}
         - <a href="/{{ cat.name|urlencode }}/{{ b.name|urlencode }}/build/{{ b.current_build }}">now building</a>:
         currently working on <code>{{ b.current_step }}</code>.
       {% else %}
