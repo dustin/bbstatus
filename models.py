@@ -76,7 +76,7 @@ class BuildStatus(db.Model):
     started = db.DateTimeProperty(auto_now=True)
     finished = db.DateTimeProperty()
 
-    def get_steps(self):
+    def steps(self):
         query = StepStatus.all()
         query.filter('builder = ', self.builder)
         query.filter('buildNumber =', self.buildNumber)

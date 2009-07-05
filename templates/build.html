@@ -15,7 +15,7 @@
 <h2>Build Steps</h2>
 
 <ol class="steps">
-{% for step in build.get_steps %}
+{% for step in build.steps %}
   <li>{{ step.name }}:  <span class="{{ step.status }}">{{ step.status }}</span>
     {% if step.logs %}
       <ul>
