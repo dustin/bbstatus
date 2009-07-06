@@ -2,6 +2,22 @@ import time, yaml, urllib, datetime, logging
 
 from google.appengine.ext import db
 from google.appengine.api import datastore_types
+from google.appengine.api import memcache
+
+def cached(key_func):
+    def f(orig):
+        def every(self):
+            k = key_func(self)
+            rv = memcache.get(k)
+            if rv is None:
+                rv = orig(self)
+                logging.info("Setting %s to %s in cache", k, rv)
+                memcache.set(k, rv)
+            else:
+                logging.info("Got %s from cache", k)
+            return rv
+        return every
+    return f
 
 class Category(db.Model):
 
@@ -12,15 +28,36 @@ class Category(db.Model):
     def id(self):
         return self.name
 
+    def _building_cache_key(self):
+        return "cat:building:" + urllib.quote(self.name)
+
+    def _builder_cache_key(self):
+        return "cat:builders:" + urllib.quote(self.name)
+
+    @cached(_builder_cache_key)
     def builders(self):
+        logging.info("Finding all builders for %s", self.name)
         return Builder.all().filter('category = ', self).order('name').fetch(1000)
 
+    @cached(_building_cache_key)
     def is_building(self):
         logging.info("Checking to see if %s has active builders", self.name)
         return any(b.is_building() for b in self.builders())
 
     def __cmp__(self, o):
         return cmp(self.name, o.name)
+
+    def _invalidate_building_cache(self):
+        memcache.delete(self._building_cache_key())
+
+    def _invalidate_builder_cache(self):
+        memcache.delete_multi([self._builder_cache_key(),
+                               self._building_cache_key()])
+
+    def put(self):
+        rv = super(Category, self).put()
+        self._invalidate_builder_cache()
+        return rv
 
 class Builder(db.Model):
 
@@ -64,6 +101,11 @@ class Builder(db.Model):
         query.filter('builder = ', self)
         query.filter('buildNumber =', n)
         return query.get()
+
+    def put(self):
+        rv = super(Builder, self).put()
+        self.category._invalidate_builder_cache()
+        return rv
 
 class BuildStatus(db.Model):
 
