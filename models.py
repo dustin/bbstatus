@@ -4,6 +4,8 @@ from google.appengine.ext import db
 from google.appengine.api import datastore_types
 from google.appengine.api import memcache
 
+CACHE_VERSION=2
+
 def cached(key_func):
     def f(orig):
         def every(self):
@@ -29,15 +31,16 @@ class Category(db.Model):
         return self.name
 
     def _building_cache_key(self):
-        return "cat:building:" + urllib.quote(self.name)
+        return "cat:building:%s:%s" % (CACHE_VERSION, urllib.quote(self.name))
 
     def _builder_cache_key(self):
-        return "cat:builders:" + urllib.quote(self.name)
+        return "cat:builders:%s:%s" % (CACHE_VERSION, urllib.quote(self.name))
 
     @cached(_builder_cache_key)
     def builders(self):
         logging.info("Finding all builders for %s", self.name)
-        return Builder.all().filter('category = ', self).order('name').fetch(1000)
+        everything = Builder.all().filter('category = ', self).order('name').fetch(1000)
+        return [e for e in everything if e.is_valid()]
 
     @cached(_building_cache_key)
     def is_building(self):
@@ -54,6 +57,7 @@ class Category(db.Model):
         memcache.delete_multi([self._builder_cache_key(),
                                self._building_cache_key()])
 
+
     def put(self):
         rv = super(Category, self).put()
         self._invalidate_builder_cache()
@@ -61,6 +65,7 @@ class Category(db.Model):
 
 class Builder(db.Model):
 
+    max_builder_age = datetime.timedelta(30, 0, 0)
     max_build_age = datetime.timedelta(0, 3600, 0)
 
     category = db.ReferenceProperty(Category)
@@ -72,6 +77,16 @@ class Builder(db.Model):
 
     def id(self):
         return self.name
+
+    def is_valid(self):
+        build = self.get_build(self.latest_build)
+        if not build:
+            return False
+
+        age = datetime.datetime.now() - build.started
+        logging.info("Found a build from %s started at %s (%s ago vs. %s)",
+                     self.name, build.started, age, self.max_builder_age)
+        return age < self.max_builder_age
 
     def is_building(self):
         if not self.current_build:
